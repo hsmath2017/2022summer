@@ -1,0 +1,125 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{appendix}
+\usepackage{enumitem}
+\usepackage{abstract}
+\usepackage{multirow}
+\pagestyle{fancy}
+\lfoot{}%这条语句可以让页码出现在下方
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\newtheorem{eg}{Example}[section]
+\newcommand{\supp}{\text{supp}}
+\newcommand{\Rn}{\mathbb{R}^{n}}
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\cp}{\cdot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+\newcommand{\DR}{\mathcal{D}_{\widetilde{LN}}^{n}}
+\newcommand{\add}[2]{\sum_{#1=1}^{#2}}
+\newcommand{\innerprod}[2]{\left<#1,#2\right>}
+\newcommand\tbbint{{-\mkern -16mu\int}}
+\newcommand\tbint{{\mathchar '26\mkern -14mu\int}}
+\newcommand\dbbint{{-\mkern -19mu\int}}
+\newcommand\dbint{{\mathchar '26\mkern -18mu\int}}
+\newcommand\bint{
+{\mathchoice{\dbint}{\tbint}{\tbint}{\tbint}}
+}
+\newcommand\bbint{
+{\mathchoice{\dbbint}{\tbbint}{\tbbint}{\tbbint}}
+}
+\title{Finite Volume Design}
+\author{Shuang Hu}
+\begin{document}
+\maketitle
+\section{问题描述}
+设计四阶精度的有限体积算法求解\textbf{对流扩散方程}的初边值问题和\textbf{不可压Navier-Stokes方程}的周期边界问题。方程的表示形式具体如下：
+
+对流扩散方程：
+\begin{equation}
+    \left\{
+        \begin{aligned}
+            \pdfFrac{\phi}{t}&=-\nabla\cdot(\mathbf{u}\phi)+\nu\Delta\phi+f,\\
+            \phi(\mathbf{x},0)&=g_{1}(\mathbf{x}),\mathbf{x}\in\Omega,\\
+            \phi(\mathbf{x},t)&=g_{2}(\mathbf{x},t),\mathbf{x}\in\partial\Omega.\\
+        \end{aligned}
+    \right.
+\end{equation}
+如果是Neumann边界条件，第三个表达式则改为
+\begin{equation}
+    \pdfFrac{\phi}{\mathbf{n}}=g_{2}(\mathbf{x},t).
+\end{equation}
+
+周期边界的INSE,区域$\Omega:=[0,1]^2$:
+\begin{equation}
+    \left\{
+        \begin{aligned}
+            \pdfFrac{\mathbf{u}}{t}+\mathbf{u}\cdot\nabla\mathbf{u}&=\mathbf{g}-\nabla p+\nu\Delta\mathbf{u},\\
+            \nabla\cdot\mathbf{u}&=0,\mathbf{x}\in\Omega,\\
+            \mathbf{u}(x,y,t)&=\mathbf{u}(x+1,y,t).\\
+            \mathbf{u}(x,y,0)&=\mathbf{u}_{0}(x,y)\\
+        \end{aligned}
+    \right.
+\end{equation}
+在本次作业中，需要实现对流扩散方程在\textbf{Dirichlet}和\textbf{Neumann}两种边界条件下的求解，其中时间积分方法利用\textbf{ERK-ESDIRK IMEX Runge-Kutta格式}，并且在近似\textbf{Leray-Helmholtz投影算子}时，需要采用多重网格算法。
+\section{底层程序}
+底层的数据结构和数值算法沿用先前组里求解Navier-Stokes方程的软件包，在本程序中需要用到的是以下内容：
+\begin{itemize}
+    \item \texttt{class Vec}:用来表示空间中的点。
+    \item \texttt{class Tensor}:用来存储体平均值，表示系数矩阵等。
+    \item \texttt{class RowSparse}:用于存储稀疏矩阵。
+    \item \texttt{class Box}:用于网格离散。
+    \item \texttt{class RectDomain}:用于表示问题区域（矩形）。
+    \item \texttt{numlib.h}:一些常用的数值算法，这里会多次用到数值积分程序段。
+\end{itemize}
+\section{class VectorFunction}
+\begin{itemize}
+    \item 函数$\mathbb{R}^{\text{Dim}_{1}}\rightarrow\mathbb{R}^{\text{Dim}_{2}}$的基类，用于表示方程的初值/边值信息，或者是右端项。
+    \item \textbf{模板:} \texttt{template<int Dim1,int Dim2>}:
+    
+    \texttt{Dim1}和\texttt{Dim2}分别表示定义域和值域所在的空间维数。
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+    \item \texttt{virtual const Vec<Dim2> operator()(const Vec<Dim1>\& pt) const = 0;}
+
+      \textbf{public成员函数}
+
+      \textbf{输入:} \texttt{pt}表示\texttt{Dim1}维空间中的一个点。
+
+      \textbf{输出:} 该函数在\texttt{pt}点处的取值。
+
+      \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
+    \end{enumerate}
+\end{itemize}
+\end{document}
