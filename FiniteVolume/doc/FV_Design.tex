@@ -110,7 +110,7 @@
 \end{itemize}
 \section{class VectorFunction}
 \begin{itemize}
-    \item 函数$\mathbb{R}^{\text{Dim}_{1}}\rightarrow\mathbb{R}^{\text{Dim}_{2}}$的基类，用于表示方程的初值/边值信息，或者是右端项。
+    \item 函数$\mathbb{R}^{\text{Dim}_{1}}\rightarrow\mathbb{R}^{\text{Dim}_{2}}$的基类，用于表示方程的初值/边值信息，或者是右端项。注意这里的\texttt{Dim2}不等于1，\texttt{Dim2=1}时我们用\texttt{ScalarFunction}存储。
     \item \textbf{模板:} \texttt{template<int Dim1,int Dim2>}:
     
     \texttt{Dim1}和\texttt{Dim2}分别表示定义域和值域所在的空间维数。
@@ -125,6 +125,24 @@
       \textbf{输出:} 该函数在\texttt{pt}点处的取值。
 
       \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
+    \end{enumerate}
+\end{itemize}
+\section{class ScalarFunction}
+\begin{itemize}
+    \item 函数$\mathbb{R}^{\text{Dim}}\rightarrow\mathbb{R}$的基类。
+    \item \textbf{模板:}\texttt{template<int Dim>:}
+    \texttt{Dim}表示定义域的维数。
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{virtual const Real operator()(const Vec<Dim>\& pt) const = 0;}
+    
+          \textbf{public成员函数}
+    
+          \textbf{输入:} \texttt{pt}表示\texttt{Dim}维空间中的一个点。
+    
+          \textbf{输出:} 该函数在\texttt{pt}点处的取值。
+    
+          \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
     \end{enumerate}
 \end{itemize}
 \section{class FuncFiller}
@@ -148,7 +166,9 @@
         \textbf{输入:} 需要进行函数值填充的问题区域，要求为矩形区域。
 
         \textbf{作用:} 构造函数，记录问题区域的信息。
-        \item \texttt{Real Quadrature(const rVec\& lo,const rVec\& hi,\\const VectorFunction<Dim>* func) const;}
+        \item \texttt{template<int Dim2>}
+        
+        \texttt{Vec<Real,Dim2> Quadrature(const rVec\& lo,const rVec\& hi,\\const VectorFunction<Dim,Dim2>* func) const;}
         
         \textbf{private成员函数}
         
@@ -156,28 +176,47 @@
 
         \textbf{输出:}函数\texttt{func}在网格\texttt{[lo,hi]}上积分平均的近似值。
 
-        \textbf{作用:}计算函数在一个网格上积分平均的近似值，即体平均值。
+        \textbf{作用:}计算向量值函数在一个网格上积分平均的近似值，即体平均值。
 
-        \item \texttt{void fill(Tensor<Real,Dim>\& target, const VectorFunction<Dim>* func) const;} 
+        \item \texttt{Real Quadrature(const rVec\& lo,const rVec\& hi,\\const ScalarFunction<Dim>* func) const;}
+        
+        \textbf{private成员函数}
+        
+        \textbf{输入:} \texttt{lo}表示正方体区域左下角，\texttt{hi}表示区域右上角，\texttt{func}表示需要求积分的函数。
+
+        \textbf{输出:}函数\texttt{func}在网格\texttt{[lo,hi]}上积分平均的近似值。
+
+        \textbf{作用:}计算标量函数在一个网格上积分平均的近似值，即体平均值。
+
+        \item 
+        \texttt{template<int Dim2>}
+
+        \texttt{void fill(Tensor<Vec<Real,Dim2>,Dim>\& target, const VectorFunction<Dim,Dim2>* func) const;} 
         
         \textbf{public 成员函数}
 
-        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}为用来填充函数体平均值的指针。
+        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}指向一个向量值函数。
+
+        \textbf{作用:} 将函数\texttt{*func}在每个离散网格上的积分平均值填入\texttt{target}。
+
+        \item \texttt{void fill(Tensor<Real,Dim>\& target, const ScalarFunction<Dim>* func) const;}
+        
+        \textbf{public 成员函数}
+
+        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}指向一个标量函数。
 
         \textbf{作用:} 将函数\texttt{*func}在每个离散网格上的积分平均值填入\texttt{target}。
     \end{enumerate}
 \end{itemize}
 \section{class GhostFiller}
+\texttt{enum BdryType\{ Dirichlet=0, Neumann=1 \};}
 \begin{itemize}
     \item 利用已知的边界条件填充\texttt{Ghost Cell}。
-    \item \textbf{模板:} \texttt{template<int Dim>:}
+    \item \textbf{模板:} \texttt{template<int Dim,BdryType BCType>:}
     
-    \texttt{Dim}表示空间维数。
-    \item \texttt{public:}
-    
-    \texttt{enum Type\{ Dirichlet=0, Neumann=1 \};}
+    \texttt{Dim}表示空间维数。\texttt{BCType}表示边界条件种类。
 
-    \texttt{Type}表示边值条件的种类是\texttt{Dirichlet}或\texttt{Neumann}。
+    \texttt{BCType}表示边值条件的种类是\texttt{Dirichlet}或\texttt{Neumann}。
     \item \textbf{成员变量:}
     \begin{enumerate}
         \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
@@ -186,7 +225,7 @@
     \end{enumerate}
     \item \textbf{成员函数:}
     \begin{enumerate}
-        \item \texttt{Real FaceAverage(const rVec\& lo,const rVec\& hi,\\const VectorFunction<Dim>* func) const;}
+        \item \texttt{Real FaceAverage(const rVec\& lo,const rVec\& hi,\\const ScalarFunction<Dim>* func) const;}
         
         \textbf{private成员函数}
 
@@ -196,7 +235,7 @@
 
         \textbf{作用:} 计算函数在控制面上的积分平均。
 
-        \item \texttt{GhostFiller(const RectDomain<Dim>\& aDomain, Type atype, int numGhost);}
+        \item \texttt{GhostFiller(const RectDomain<Dim>\& aDomain, int numGhost);}
         
         \textbf{public成员函数}
 
@@ -206,7 +245,7 @@
 
         \textbf{作用:}构造函数，记录区域信息，边界条件信息，并初始化\texttt{bdryCond}。
 
-        \item \texttt{void fillBdry(const VectorFunction<Dim>* func);}
+        \item \texttt{void fillBdry(const ScalarFunction<Dim>* func);}
         
         \textbf{public成员函数}
 
@@ -221,4 +260,45 @@
         \textbf{作用:}利用\texttt{res}中原有的体平均值和计算出的面平均值，向外填充\texttt{Ghost Cell}，更新\texttt{res}的值。
     \end{enumerate}
 \end{itemize}
+\section{class SpacialOp}
+\begin{itemize}
+    \item 虚基类，用于表示离散的空间算子。
+    \item \textbf{模板:}\texttt{template<int Dim,class T1,class T2>:}
+    
+    \texttt{Dim}表示空间维数，\texttt{T1}表示算子作用前的数据类型，\texttt{T2}表示算子作用后的数据类型。
+
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
+        \item \texttt{int nGhost:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的层数。
+    \end{enumerate}
+
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{SpacialOp(const RectDomain<int>\& aDomain,int numGhost);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{aDomain}表示问题区域，\texttt{numGhost}表示需要填充\texttt{Ghost Cell}的层数。
+
+        \textbf{作用:} 构造函数，记录空间算子所需的信息。
+
+        \item \texttt{void getFaceAvg(const Tensor<T1,Dim>\& origin, Tensor<T1,Dim>\& res,\\ int dim);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示\textbf{填写过Ghost Cell的}控制体平均值张量，\texttt{res}表示控制面平均张量的近似值，\texttt{dim}表示在第\texttt{dim}维度上求解面平均。
+
+        \textbf{作用:}利用体平均来近似计算面平均。
+
+        \item \texttt{virtual void apply(const Tensor<T1,Dim>\& origin, Tensor<T2,Dim>\& res) = 0;}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示控制体平均张量, \texttt{res}表示在\texttt{origin}上作用离散算子之后得到的控制体平均值张量。
+
+        \textbf{作用:}用于描述空间离散算子的作用结果。
+    \end{enumerate}
+\end{itemize}
+\section{class Laplacian}
 \end{document}
