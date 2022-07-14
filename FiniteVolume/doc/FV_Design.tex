@@ -102,6 +102,11 @@
     \item \texttt{class Box}:用于网格离散。
     \item \texttt{class RectDomain}:用于表示问题区域（矩形）。
     \item \texttt{numlib.h}:一些常用的数值算法，这里会多次用到数值积分程序段。
+    \item 约定一些符号表示：
+    \begin{itemize}
+        \item \texttt{template<int Dim>} 表示问题区域的维数。
+        \item \texttt{using rVec=Vec<Real,Dim>}
+    \end{itemize}
 \end{itemize}
 \section{class VectorFunction}
 \begin{itemize}
@@ -120,6 +125,100 @@
       \textbf{输出:} 该函数在\texttt{pt}点处的取值。
 
       \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
+    \end{enumerate}
+\end{itemize}
+\section{class FuncFiller}
+\begin{itemize}
+    \item 将所给函数的积分平均值填充到离散网格中。
+    \item \textbf{模板:}\texttt{template<int Dim>:}
+    
+    \texttt{Dim}表示问题空间的维数。在本次作业中，该模板参数取2，下同。
+
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充的均匀网格。
+    \end{enumerate}
+
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{FuncFiller(const RectDomain<Dim>\& adomain);}
+        
+        \textbf{public成员函数}
+        
+        \textbf{输入:} 需要进行函数值填充的问题区域，要求为矩形区域。
+
+        \textbf{作用:} 构造函数，记录问题区域的信息。
+        \item \texttt{Real Quadrature(const rVec\& lo,const rVec\& hi,\\const VectorFunction<Dim>* func) const;}
+        
+        \textbf{private成员函数}
+        
+        \textbf{输入:} \texttt{lo}表示正方体区域左下角，\texttt{hi}表示区域右上角，\texttt{func}表示需要求积分的函数。
+
+        \textbf{输出:}函数\texttt{func}在网格\texttt{[lo,hi]}上积分平均的近似值。
+
+        \textbf{作用:}计算函数在一个网格上积分平均的近似值，即体平均值。
+
+        \item \texttt{void fill(Tensor<Real,Dim>\& target, const VectorFunction<Dim>* func) const;} 
+        
+        \textbf{public 成员函数}
+
+        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}为用来填充函数体平均值的指针。
+
+        \textbf{作用:} 将函数\texttt{*func}在每个离散网格上的积分平均值填入\texttt{target}。
+    \end{enumerate}
+\end{itemize}
+\section{class GhostFiller}
+\begin{itemize}
+    \item 利用已知的边界条件填充\texttt{Ghost Cell}。
+    \item \textbf{模板:} \texttt{template<int Dim>:}
+    
+    \texttt{Dim}表示空间维数。
+    \item \texttt{public:}
+    
+    \texttt{enum Type\{ Dirichlet=0, Neumann=1 \};}
+
+    \texttt{Type}表示边值条件的种类是\texttt{Dirichlet}或\texttt{Neumann}。
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
+        \item \texttt{Tensor<Real,Dim> bdryCond:} \textbf{private成员变量}，表示边界处的面平均信息。
+        \item \texttt{int nGhost:} \textbf{private成员变量}，表示需要填充的\texttt{Ghost Cell}层数。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{Real FaceAverage(const rVec\& lo,const rVec\& hi,\\const VectorFunction<Dim>* func) const;}
+        
+        \textbf{private成员函数}
+
+        \textbf{输入:} \texttt{lo}表示控制面的左下角，\texttt{hi}表示控制面的右上角，\texttt{func}指向需要求积分的函数。
+
+        \textbf{输出:} 函数\texttt{func}在控制面\texttt{[lo,hi]}上的积分平均值。
+
+        \textbf{作用:} 计算函数在控制面上的积分平均。
+
+        \item \texttt{GhostFiller(const RectDomain<Dim>\& aDomain, Type atype, int numGhost);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{aDomain}表示需要进行\texttt{Ghost Cell}填充的区域，\texttt{atype}表示边界条件的种类， 
+        
+        \texttt{numGhost}表示需要填写\texttt{Ghost Cell}的层数。
+
+        \textbf{作用:}构造函数，记录区域信息，边界条件信息，并初始化\texttt{bdryCond}。
+
+        \item \texttt{void fillBdry(const VectorFunction<Dim>* func);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{func}表示边值条件。
+
+        \textbf{作用:}利用边值条件计算区域边界控制面的平均值，并填充至\texttt{bdryCond}。
+
+        \item \texttt{void fillGhost(Tensor<Real,Dim>\& res) const;}
+        
+        \textbf{输入:} \texttt{res}表示需要填充\texttt{Ghost Cell}张量。
+
+        \textbf{作用:}利用\texttt{res}中原有的体平均值和计算出的面平均值，向外填充\texttt{Ghost Cell}，更新\texttt{res}的值。
     \end{enumerate}
 \end{itemize}
 \end{document}

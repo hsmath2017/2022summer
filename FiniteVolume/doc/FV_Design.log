@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.9.28)  13 JUL 2022 20:41
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.9.28)  14 JUL 2022 16:18
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -788,14 +788,14 @@ Make it at least 12.64723pt.
 We now make it that large for the rest of the document.
 This may cause the page layout to be inconsistent, however.
 
-[2] (./FV_Design.aux) ) 
+[2] [3] [4] (./FV_Design.aux) ) 
 Here is how much of TeX's memory you used:
  21250 strings out of 492909
  456807 string characters out of 6135047
- 524991 words of memory out of 5000000
+ 527991 words of memory out of 5000000
  25077 multiletter control sequences out of 15000+600000
  540136 words of font info for 81 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 56i,11n,74p,852b,446s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 56i,12n,74p,852b,497s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on FV_Design.pdf (2 pages).
+Output written on FV_Design.pdf (4 pages).
