@@ -209,7 +209,7 @@
     \end{enumerate}
 \end{itemize}
 \section{class GhostFiller}
-\texttt{enum BdryType\{ Dirichlet=0, Neumann=1 \};}
+\texttt{enum BdryType\{ Dirichlet=0, Neumann=1, Periodic=2\};}
 \begin{itemize}
     \item 利用已知的边界条件填充\texttt{Ghost Cell}。
     \item \textbf{模板:} \texttt{template<int Dim,BdryType BCType>:}
@@ -269,8 +269,8 @@
 
     \item \textbf{成员变量:}
     \begin{enumerate}
-        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
-        \item \texttt{int nGhost:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的层数。
+        \item \texttt{RectDomain<Dim> domain:} \textbf{protected成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
+        \item \texttt{int nGhost:} \textbf{protected成员变量}，表示需要填充\texttt{Ghost Cell}的层数。
     \end{enumerate}
 
     \item \textbf{成员函数:}
@@ -301,4 +301,126 @@
     \end{enumerate}
 \end{itemize}
 \section{class Laplacian}
+\begin{itemize}
+    \item 用于表示拉普拉斯算子的四阶有限体积离散。
+    \item \textbf{模板:} \texttt{template<int Dim>}
+    \item \textbf{继承:} \texttt{class Laplacian:public SpacialOp<Dim,Real,Real>}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{void apply(const Tensor<Real,Dim>\& origin, Tensor<Real,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示控制体上的体平均张量，\texttt{res}表示作用拉普拉斯算子后控制体上的体平均张量。
+
+        \textbf{作用:}对拉普拉斯算子进行离散化。
+    \end{enumerate}
+    \section{class Divergent}
+    \item 用于表示散度算子的四阶有限体积离散
+    \item \textbf{模板:} \texttt{template<int Dim>}
+    \item \texttt{using rVec=Vec<Real,Dim>;}
+    \item \textbf{继承:} \texttt{class Divergent:public SpacialOp<Dim,rVec,Real>}
+    \item \textbf{成员函数:} 
+    \begin{enumerate}
+        \item \texttt{void apply(const Tensor<rVec,Dim>\& origin, Tensor<Real,Dim>\& res);}
+        
+        \textbf{public成员函数}
+        
+        \textbf{输入:}\texttt{origin}表示一个向量场的体平均值，\texttt{res}表示该向量场上作用离散散度算子后的体平均值。
+
+        \textbf{作用:}对散度算子进行离散化。
+    \end{enumerate}
+\end{itemize}
+\section{class Gradient}
+\begin{itemize}
+    \item 用于表示梯度算子的四阶有限体积离散
+    \item \textbf{模板:}\texttt{template<int Dim>}
+    \item \texttt{using rVec=Vec<Real,Dim>}
+    \item \textbf{继承:}\texttt{class Gradient:public SpacialOp<Dim,Real,rVec>}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{void apply(const Tensor<Real,Dim>\& origin, Tensor<rVec,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示一个标量场的体平均值，\texttt{res}表示在该标量场上作用离散梯度算子后得到的体平均值。
+
+        \textbf{作用:}对梯度算子进行离散化。
+    \end{enumerate}
+\end{itemize}
+\section{class InnerProduct}
+\begin{itemize}
+    \item 用于求解内积算子面平均值的离散化。
+    \item \textbf{模板:} \texttt{template<int Dim>}
+    \item \textbf{继承:} \texttt{class InnerProduct:public SpacialOp<Dim,Real,Real>}
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{int dim:} \textbf{private成员变量,}用于表示当前我们所关心的控制面。
+        \item \texttt{Tensor<Real,Dim> phi:} \textbf{private成员变量,}表示内积表达式中的其中一个函数。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{InnerProduct(const RectDomain<Dim>\& aDomain, int numGhost,const Tensor<Real,Dim>\& aphi, int adim);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{aDomain,numGhost}用于初始化基类，\texttt{adim,aphi}用于初始化本派生类。
+
+        \textbf{作用:}构造函数。
+
+        \item \texttt{void apply(const Tensor<Real,Dim>\& origin, Tensor<Real,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示一个标量场在\texttt{dim}维上的\textbf{面平均值}，\texttt{res}表示在该控制面上\texttt{origin}和\texttt{phi}作离散内积后的面平均值。
+    \end{enumerate}
+\end{itemize}
+\section{class Advection}
+\begin{itemize}
+    \item 用于实现对流项的离散化。
+    \item \textbf{模板:}\texttt{template<int Dim>}
+    \item \textbf{继承:}\texttt{class Advection:public SpacialOp<Dim,Real,Real>}
+    \item TBD
+\end{itemize}
+\section{class Projection}
+\begin{itemize}
+    \item TBD
+\end{itemize}
+\section{class RungeKutta}
+\begin{itemize}
+    \item 进行一步Runge-Kutta迭代，求解初值问题
+    \begin{equation}
+        \left\{
+            \begin{aligned}
+        \difFrac{\mathbf{x}}{t}&=f(\mathbf{x},t),\\
+        \mathbf{x}(t_{0})&=\mathbf{x}_{0}.
+            \end{aligned}
+        \right.
+    \end{equation}
+    \item \textbf{模板:} \texttt{template<int Dim,class DType>:} \texttt{DType}表示初值问题变量的数据类型。
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{Tensor<Real,Dim> butlar:} \textbf{private成员变量},记录Runge-Kutta法对应的Butlar表。
+        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量},记录区域信息。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{virtual void getRHS(const Tensor<DType,Dim>\& input, Tensor<DType,Dim>\& rhs, \\Real t) = 0;}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{input}表示目前的体平均张量值，\texttt{rhs}表示在$t$时刻的右端项。
+
+        \textbf{作用:}用于描述$f(\mathbf{x},t)$，纯虚函数，依赖于派生类的具体实现，与算子离散方式有关。
+        \item \texttt{void apply(Tensor<DType,Dim>\& res, const Tensor<DType,Dim>\& input, Real t0,\\ Real k);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{input}表示初始值$\textbf{x}(t_{0})$，\texttt{rhs}表示近似值$\textbf{x}(t_{0}+k)$, \texttt{t0}表示初始时刻, \texttt{k}表示时间间隔。
+
+        \textbf{作用:}在已知$\mathbf{x}(t_{0})=\mathbf{x}_{0}$的情况下，利用\texttt{Runge-Kutta}算法求解$\mathbf{x}(t_{0}+k)$。
+    \end{enumerate}
+\end{itemize}
+\section{class Advection_Diffusion}
+
 \end{document}
