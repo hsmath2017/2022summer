@@ -1,0 +1,85 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{appendix}
+\usepackage{enumitem}
+\usepackage{abstract}
+\usepackage{multirow}
+\pagestyle{fancy}
+\lfoot{}%这条语句可以让页码出现在下方
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\newtheorem{eg}{Example}[section]
+\newcommand{\supp}{\text{supp}}
+\newcommand{\Rn}{\mathbb{R}^{n}}
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\cp}{\cdot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+\newcommand{\DR}{\mathcal{D}_{\widetilde{LN}}^{n}}
+\newcommand{\add}[2]{\sum_{#1=1}^{#2}}
+\newcommand{\innerprod}[2]{\left<#1,#2\right>}
+\newcommand\tbbint{{-\mkern -16mu\int}}
+\newcommand\tbint{{\mathchar '26\mkern -14mu\int}}
+\newcommand\dbbint{{-\mkern -19mu\int}}
+\newcommand\dbint{{\mathchar '26\mkern -18mu\int}}
+\newcommand\bint{
+{\mathchoice{\dbint}{\tbint}{\tbint}{\tbint}}
+}
+\newcommand\bbint{
+{\mathchoice{\dbbint}{\tbbint}{\tbbint}{\tbbint}}
+}
+\title{BSpecRProblem Notes}
+\author{Shuang Hu}
+\begin{document}
+\maketitle
+\section{文档中的一些小错误}
+\begin{itemize}
+    \item $(11)$式的上标应当为$n+1$，而不是$n$。
+    \item $(25)$式中，矩阵$B=(I+rA)^{-1}(I+rS)$。同理，后面关于$B^{-1}$的讨论也有同样的问题。
+    \item $(31)$式下面说明，范数$\|\cdot\|$为$\infty$范数，但Section 1.2.1中实际讨论的是2-范数(谱半径)，那么是不是意味着我们没必要强调该范数是无穷范数？
+    \item $(35)$和$(36)$式的符号都有小问题，应当是$|\rho(B)\le 1|$, $|\lambda(B^{-1})|=|1+\lambda(Q)|\ge 1$.
+\end{itemize}
+\section{关于算法的一些疑问}
+\begin{itemize}
+    \item 注意到，本次采用的虽然是熟悉的有限差分$MOL$算法，但取点的方案却和经典的有限差分算法有较大区别。记$n$为小区间段个数，$h=\frac{1}{n}$是每一段小区间的长度，之前我们学过的有限差分算法求解的是$x_{i}=ih$处函数的近似值，在处理边界条件时为方便起见，往往取$x_{-1}=-h$和$x_{n+1}=(n+1)h$为\texttt{Ghost Cell}。但在本问题的算法中，我们关心的是每段小区间中点处函数的近似取值，即$x_{i}=(i+\frac{1}{2})h$。相应的，\texttt{Ghost Cell}取为$x_{-1}:=-\frac{1}{2}h$和$x_{n}:=1+\frac{1}{2}h$。这样处理之后，方便了\textbf{Neumann边值条件}的处理，但与此同时对\textbf{Dirichlet边值条件}的处理造成了不便。这种处理方式和我们常用的处理方式相比较，优势和劣势分别体现在何处？
+    \item 按照设定，$x_{I}$点左侧为较快的物理过程，而$x_{I}$右侧较慢。那么，针对两种不一样的物理过程，为什么采用同样的数值算法进行处理？可能在$x_{I}$左侧采用中心差分和向后欧拉，在$x_{I}$右侧采用中心差分和向前欧拉，会是更合理的处理方式。
+    \item 如上一点所述，对于$x_{I}$左侧和右侧的数据点分别求解，其原因是系数$\nu(x)$在$x_{I}$左侧和右侧存在截然不同的表现。如果$\nu$在问题区域$[0,1]$上为一个常值，那么直接在整个区域上进行有限差分离散就可以了。但在稳定性讨论时，我们则是针对一个经典的热方程进行讨论，这是因为我们需要先保证该算法求解热方程的正确性吗？
+    \item 注意到，式$(24)$的矩阵$A$并非一个分块对角矩阵，这也就意味着$x_{I}$的左右两侧并没有完全解耦。这或许是稳定性分析的主要难点？
+    \item 如果考虑到$x_{I}$左侧和右侧$\nu$的显著区别，那么$r:=\frac{k\nu}{h^2}$至少需要分两段讨论，即$x_{I}$左侧和$x_{I}$右侧的$r$会存在显著区别，这样等式$(19)$则不成立，问题会更为复杂一些。
+\end{itemize}
+\section{一些思路}
+\begin{itemize}
+    \item 利用\textbf{Sherman-Morrison formula}计算$B$然后直接分析的思路我认为不能优先考虑。因为表达式$(40)$过于复杂，很难通过$(40)$直接分析矩阵$B$的相关信息。
+\end{itemize}
+\end{document}

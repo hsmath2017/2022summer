@@ -108,12 +108,13 @@
         \item \texttt{using rVec=Vec<Real,Dim>}
     \end{itemize}
 \end{itemize}
-\section{class VectorFunction}
+\section{FuncFiller}
+\subsection{class VectorFunction}
 \begin{itemize}
-    \item 函数$\mathbb{R}^{\text{Dim}_{1}}\rightarrow\mathbb{R}^{\text{Dim}_{2}}$的基类，用于表示方程的初值/边值信息，或者是右端项。注意这里的\texttt{Dim2}不等于1，\texttt{Dim2=1}时我们用\texttt{ScalarFunction}存储。
+    \item 函数$\mathbb{R}^{\text{Dim}_{1}}\rightarrow\mathbb{R}^{\text{Dim}_{2}}$的基类，用于表示方程的初值/边值信息，或者是右端项。
     \item \textbf{模板:} \texttt{template<int Dim1,int Dim2>}:
     
-    \texttt{Dim1}和\texttt{Dim2}分别表示定义域和值域所在的空间维数。
+    \texttt{Dim1}和\texttt{Dim2}分别表示定义域和值域所在的空间维数。其中，如果\texttt{Dim2=1}，则代表该函数为标量函数。
     \item \textbf{成员函数:}
     \begin{enumerate}
     \item \texttt{virtual const Vec<Dim2> operator()(const Vec<Dim1>\& pt) const = 0;}
@@ -127,31 +128,15 @@
       \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
     \end{enumerate}
 \end{itemize}
-\section{class ScalarFunction}
-\begin{itemize}
-    \item 函数$\mathbb{R}^{\text{Dim}}\rightarrow\mathbb{R}$的基类。
-    \item \textbf{模板:}\texttt{template<int Dim>:}
-    \texttt{Dim}表示定义域的维数。
-    \item \textbf{成员函数:}
-    \begin{enumerate}
-        \item \texttt{virtual const Real operator()(const Vec<Dim>\& pt) const = 0;}
-    
-          \textbf{public成员函数}
-    
-          \textbf{输入:} \texttt{pt}表示\texttt{Dim}维空间中的一个点。
-    
-          \textbf{输出:} 该函数在\texttt{pt}点处的取值。
-    
-          \textbf{作用:} 计算函数在一个离散点上的值。纯虚函数，需要在继承类中具体实现。
-    \end{enumerate}
-\end{itemize}
-\section{class FuncFiller}
+
+\subsection{class FuncFiller}
 \begin{itemize}
     \item 将所给函数的积分平均值填充到离散网格中。
     \item \textbf{模板:}\texttt{template<int Dim>:}
     
     \texttt{Dim}表示问题空间的维数。在本次作业中，该模板参数取2，下同。
 
+    \item \texttt{using rVec=Vec<Real,Dim>}。
     \item \textbf{成员变量:}
     \begin{enumerate}
         \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充的均匀网格。
@@ -176,17 +161,8 @@
 
         \textbf{输出:}函数\texttt{func}在网格\texttt{[lo,hi]}上积分平均的近似值。
 
-        \textbf{作用:}计算向量值函数在一个网格上积分平均的近似值，即体平均值。
+        \textbf{作用:}计算函数在一个网格上积分平均的近似值，即体平均值。
 
-        \item \texttt{Real Quadrature(const rVec\& lo,const rVec\& hi,\\const ScalarFunction<Dim>* func) const;}
-        
-        \textbf{private成员函数}
-        
-        \textbf{输入:} \texttt{lo}表示正方体区域左下角，\texttt{hi}表示区域右上角，\texttt{func}表示需要求积分的函数。
-
-        \textbf{输出:}函数\texttt{func}在网格\texttt{[lo,hi]}上积分平均的近似值。
-
-        \textbf{作用:}计算标量函数在一个网格上积分平均的近似值，即体平均值。
 
         \item 
         \texttt{template<int Dim2>}
@@ -195,45 +171,40 @@
         
         \textbf{public 成员函数}
 
-        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}指向一个向量值函数。
+        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}指向一个函数。
 
         \textbf{作用:} 将函数\texttt{*func}在每个离散网格上的积分平均值填入\texttt{target}。
 
-        \item \texttt{void fill(Tensor<Real,Dim>\& target, const ScalarFunction<Dim>* func) const;}
-        
-        \textbf{public 成员函数}
-
-        \textbf{输入:} \texttt{target}为待填充的\texttt{Dim}维\texttt{Tensor}; \texttt{func}指向一个标量函数。
-
-        \textbf{作用:} 将函数\texttt{*func}在每个离散网格上的积分平均值填入\texttt{target}。
     \end{enumerate}
 \end{itemize}
-\section{class GhostFiller}
+\subsection{class GhostFiller}
 \texttt{enum BdryType\{ Dirichlet=0, Neumann=1, Periodic=2\};}
 \begin{itemize}
     \item 利用已知的边界条件填充\texttt{Ghost Cell}。
-    \item \textbf{模板:} \texttt{template<int Dim,BdryType BCType>:}
+    \item \textbf{模板:} \texttt{template<int Dim,BdryType BCType,class T>:}
     
-    \texttt{Dim}表示空间维数。\texttt{BCType}表示边界条件种类。
+    \texttt{Dim}表示空间维数,\texttt{BCType}表示边界条件种类,\texttt{T}表示输入张量的数据类型。
 
     \texttt{BCType}表示边值条件的种类是\texttt{Dirichlet}或\texttt{Neumann}。
     \item \textbf{成员变量:}
     \begin{enumerate}
         \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示需要填充\texttt{Ghost Cell}的区域。
-        \item \texttt{Tensor<Real,Dim> bdryCond:} \textbf{private成员变量}，表示边界处的面平均信息。
+        \item \texttt{Tensor<T,Dim> bdryCond:} \textbf{private成员变量}，表示边界处的面平均信息。
         \item \texttt{int nGhost:} \textbf{private成员变量}，表示需要填充的\texttt{Ghost Cell}层数。
     \end{enumerate}
     \item \textbf{成员函数:}
     \begin{enumerate}
-        \item \texttt{Real FaceAverage(const rVec\& lo,const rVec\& hi,\\const ScalarFunction<Dim>* func) const;}
+        \item \texttt{template<int Dim2>}
+        
+        \texttt{Vec<Real,Dim2> FaceAverage(const rVec\& lo, const rVec\& hi, Real t0, \\const VectorFunction<Dim+1,Dim2>* func) const;}
         
         \textbf{private成员函数}
 
-        \textbf{输入:} \texttt{lo}表示控制面的左下角，\texttt{hi}表示控制面的右上角，\texttt{func}指向需要求积分的函数。
+        \textbf{输入:} \texttt{lo}表示控制面的左下角，\texttt{hi}表示控制面的右上角，\texttt{func}指向需要求积分的函数,\texttt{t0}表示边界函数的时间参量。
 
         \textbf{输出:} 函数\texttt{func}在控制面\texttt{[lo,hi]}上的积分平均值。
 
-        \textbf{作用:} 计算函数在控制面上的积分平均。
+        \textbf{作用:} 计算标量边界函数$f(\mathbf{x},t_{0})$在控制面上的积分平均。
 
         \item \texttt{GhostFiller(const RectDomain<Dim>\& aDomain, int numGhost);}
         
@@ -245,22 +216,30 @@
 
         \textbf{作用:}构造函数，记录区域信息，边界条件信息，并初始化\texttt{bdryCond}。
 
-        \item \texttt{void fillBdry(const ScalarFunction<Dim>* func);}
+        \item 
+        \texttt{template<int Dim2>}
+
+        \texttt{void fillBdry(const VectorFunction<Dim+1,Dim2>* func, Real t0);}
         
         \textbf{public成员函数}
 
-        \textbf{输入:} \texttt{func}表示边值条件。
+        \textbf{输入:} \texttt{func}表示边值条件,\texttt{t0}表示初始时刻。
 
-        \textbf{作用:}利用边值条件计算区域边界控制面的平均值，并填充至\texttt{bdryCond}。
+        \textbf{作用:}利用边值条件计算$t_{0}$时刻区域边界控制面的平均值，并填充至\texttt{bdryCond}。
 
-        \item \texttt{void fillGhost(Tensor<Real,Dim>\& res) const;}
+        \item \texttt{void fillGhost(Tensor<T,Dim>\& res) const;}
         
         \textbf{输入:} \texttt{res}表示需要填充\texttt{Ghost Cell}张量。
 
         \textbf{作用:}利用\texttt{res}中原有的体平均值和计算出的面平均值，向外填充\texttt{Ghost Cell}，更新\texttt{res}的值。
     \end{enumerate}
 \end{itemize}
-\section{class SpacialOp}
+\section{MultiGrid}
+这一部分的功能是，在\textbf{填写完Ghost Cell}的情况下，利用多重网格算法求解线性方程组$Ax=b$。这里系数矩阵$A$是由一个椭圆算子导出的。
+
+具体地，几乎可以一字不改地应用之前"微分方程数值解"课程中分享的那个多重网格设计，此处就不再重复了。
+\section{SpacialOperator}
+\subsection{class SpacialOp}
 \begin{itemize}
     \item 虚基类，用于表示离散的空间算子。
     \item \textbf{模板:}\texttt{template<int Dim,class T1,class T2>:}
@@ -300,7 +279,7 @@
         \textbf{作用:}用于描述空间离散算子的作用结果。
     \end{enumerate}
 \end{itemize}
-\section{class Laplacian}
+\subsection{class Laplacian}
 \begin{itemize}
     \item 用于表示拉普拉斯算子的四阶有限体积离散。
     \item \textbf{模板:} \texttt{template<int Dim>}
@@ -315,7 +294,9 @@
 
         \textbf{作用:}对拉普拉斯算子进行离散化。
     \end{enumerate}
-    \section{class Divergent}
+\end{itemize}
+\subsection{class Divergent}
+\begin{itemize}
     \item 用于表示散度算子的四阶有限体积离散
     \item \textbf{模板:} \texttt{template<int Dim>}
     \item \texttt{using rVec=Vec<Real,Dim>;}
@@ -331,7 +312,7 @@
         \textbf{作用:}对散度算子进行离散化。
     \end{enumerate}
 \end{itemize}
-\section{class Gradient}
+\subsection{class Gradient}
 \begin{itemize}
     \item 用于表示梯度算子的四阶有限体积离散
     \item \textbf{模板:}\texttt{template<int Dim>}
@@ -348,7 +329,7 @@
         \textbf{作用:}对梯度算子进行离散化。
     \end{enumerate}
 \end{itemize}
-\section{class InnerProduct}
+\subsection{class InnerProduct}
 \begin{itemize}
     \item 用于求解内积算子面平均值的离散化。
     \item \textbf{模板:} \texttt{template<int Dim>}
@@ -375,18 +356,77 @@
         \textbf{输入:}\texttt{origin}表示一个标量场在\texttt{dim}维上的\textbf{面平均值}，\texttt{res}表示在该控制面上\texttt{origin}和\texttt{phi}作离散内积后的面平均值。
     \end{enumerate}
 \end{itemize}
-\section{class Advection}
+\subsection{class AD\_Advection}
 \begin{itemize}
-    \item 用于实现对流项的离散化。
+    \item 在对流扩散方程中，用于实现对流项的离散化。
     \item \textbf{模板:}\texttt{template<int Dim>}
     \item \textbf{继承:}\texttt{class Advection:public SpacialOp<Dim,Real,Real>}
-    \item TBD
+    \item \texttt{using rVec=Vec<Real,Dim>}
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{Tensor<rVec,Dim> u:}\textbf{private成员变量},表示已知的速度场。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{AD\_Advection(const RectDomain<Dim>\& aDomain, int numGhost,\\ const Tensor<rVec,Dim>\& vel);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{aDomain,numGhost}用于构造基类，\texttt{vel}表示已知的速度场，用于构造派生类。
+
+        \textbf{作用:}构造函数。
+
+        \item \texttt{void apply(const Tensor<Real,Dim>\& origin, Tensor<Real,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{origin}表示$\phi$在控制体上的体平均值，\texttt{res}表示$\nabla\cdot(\textbf{u}\phi)$在控制体上体平均值的近似。
+
+        \textbf{作用:} 求解对流扩散方程中的对流项。
+    \end{enumerate}
 \end{itemize}
-\section{class Projection}
+\subsection{class INSE\_Advection}
 \begin{itemize}
+    \item 在不可压Navier-Stokes方程中，实现对流项的离散化。
+    \item \textbf{模板:}\texttt{template<int Dim>}
+    \item \textbf{继承:}\texttt{class INSE\_Advection:public SpacialOp<Dim,Vec<Real,Dim>,Vec<Real,Dim>>}
+    \item \texttt{using rVec=Vec<Real,Dim>}.
+    \item \textbf{成员函数:}
+    
+    \begin{enumerate}
+        \item \texttt{void apply(const Tensor<rVec,Dim>\& origin, Tensor<rVec,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:}\texttt{origin}表示输入的速度场的体平均值,\texttt{res}表示计算得到的$\nabla\cdot(\mathbf{u}\mathbf{u})$的近似。
+
+        \textbf{作用:}近似计算对流项。
+    \end{enumerate}
+\end{itemize}
+\subsection{class Inv\_Laplacian}
+\begin{itemize}
+    \item 用于近似拉普拉斯算子的逆。
     \item TBD
 \end{itemize}
-\section{class RungeKutta}
+\subsection{class Projection}
+\begin{itemize}
+    \item 用于实现投影算子的近似。表达式:$P=I-DL^{-1}G$。
+    \item \textbf{模板:}\texttt{template<int Dim>}
+    \item \textbf{继承:}\texttt{class Projection:public SpatialOp<Dim,Vec<Real,Dim>,Vec<Real,Dim>>;}
+    \item \texttt{using rVec=Vec<Real,Dim>;}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{void apply(const Tensor<rVec,Dim>\& origin, Tensor<rVec,Dim>\& res);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{origin}为给定的速度场，\texttt{res}为作用投影算子之后的速度场。
+
+        \textbf{作用:} 进行Leray-Helmholtz投影算子的数值模拟。
+    \end{enumerate}
+\end{itemize}
+\section{TimeIntegration}
+\subsection{class RungeKutta}
 \begin{itemize}
     \item 进行一步Runge-Kutta迭代，求解初值问题
     \begin{equation}
@@ -421,6 +461,113 @@
         \textbf{作用:}在已知$\mathbf{x}(t_{0})=\mathbf{x}_{0}$的情况下，利用\texttt{Runge-Kutta}算法求解$\mathbf{x}(t_{0}+k)$。
     \end{enumerate}
 \end{itemize}
-\section{class Advection_Diffusion}
+\subsection{class ADSolver}
+\begin{itemize}
+    \item 记录对流扩散方程的信息,并进行求解操作。
+    \item \textbf{模板:}\texttt{template<int Dim,BdryType BCType>}
+    \item \textbf{继承:}\texttt{class ADSolver:public RungeKutta<Dim,Real>}
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{VectorFunction<Dim+1,1>* f:} \textbf{private成员变量}，记录外力项$f$。
+        \item \texttt{VectorFunction<Dim+1,Dim>* u:} \textbf{private成员变量}，表示已知的速度场$\mathbf{u}$。
+        \item \texttt{VectorFunction<Dim,1>* init\_value:} \textbf{private成员变量}，表示方程的初值信息$\phi(\mathbf{x},t_{0})$。
+        \item \texttt{VectorFunction<Dim+1,1>* bdry\_value:} \textbf{private成员变量}，表示方程的边值信息。
+        \item \texttt{Real nu:} \textbf{private成员变量}，表示扩散项前面的系数。
+        \item \texttt{RectDomain<Dim> domain:} \textbf{private成员变量}，表示问题区域。
+        \item \texttt{FuncFiller<Dim> init\_filler:} \textbf{private成员变量}，用于填写初值的体平均。
+        \item \texttt{GhostFiller<Dim,BCType> ghost\_filler:} \textbf{private成员变量}，用于填写\texttt{Ghost Cell}。
+        \item \texttt{Tensor<Real,Dim> res:} \textbf{private成员变量}，用于表示$\phi$的体平均求解结果。
+        \item \texttt{Real t0:} \textbf{private成员变量}，用于表示初始时刻。
+        \item \texttt{Real te:} \textbf{private成员变量}，用于表示迭代终止时刻。
+        \item \texttt{Real dt:} \textbf{private成员变量}，用于表示时间间隔。
+        \item \texttt{Laplacian<Dim> lap:} \textbf{private成员变量}，用于表示拉普拉斯算子离散。
+        \item \texttt{Advection<Dim> adv:} \textbf{private成员变量}，用于表示对流算子的离散。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{ADSolver(const RectDomain<Dim>\& aDomain);} 
+        
+        \textbf{public成员函数}
 
+        \textbf{输入:}\texttt{aDomain}表示问题区域。
+
+        \textbf{作用:}构造函数，明确求解的问题区域，并依此对各离散算子进行初始化。
+
+        \item \texttt{void set\_param(VectorFunction<Dim+1,1>* force,VectorFunction<Dim+1,Dim>* vel,\\VectorFunction<Dim,1>* init,VectorFunction<Dim+1,1>* bdry,Real anu,\\Real init\_time, Real final\_time, Real dt);}
+        
+        \textbf{public成员函数}
+
+        \textbf{作用:}初始化方程求解的各个变量。
+
+        \item \texttt{void apply(Tensor<Real,Dim>\& input, Tensor<Real,Dim>\& rhs, Real t);}
+
+        \textbf{public成员函数}
+
+        \textbf{作用:}实现单步\texttt{Runge-Kutta}法迭代。
+
+        \item \texttt{void solve();}
+
+        \textbf{public成员函数}
+
+        \textbf{作用:}最终实现方程组求解。
+
+        \item \texttt{void draw();}
+        
+        \textbf{public成员函数}
+
+        \textbf{作用:}基于最终解出的体平均张量\texttt{res}信息，对求解结果进行可视化。
+
+    \end{enumerate}
+\end{itemize}
+\subsection{class INSESolver}
+\begin{itemize}
+    \item 记录周期边界条件下不可压Navier-Stokes方程的相关信息，并进行有限体积法求解。
+    \item \textbf{模板:}\texttt{template<int Dim>}
+    \item \textbf{继承:}\texttt{class INSESolver:public RungeKutta<Dim,Vec<Real,Dim>>}
+    \item \texttt{using rVec=Vec<Real,Dim>}
+    \item \textbf{成员变量:}
+    \begin{enumerate}
+        \item \texttt{VectorFunction<Dim+1,Dim>* g}: \textbf{private成员变量},表示外力项。
+        \item \texttt{VectorFunction<Dim,Dim>* u0}: \textbf{private成员变量},表示速度场的初始信息。
+        \item \texttt{Real Re}: \textbf{private成员变量},表示雷诺数。
+        \item \texttt{RectDomain<Dim> domain}: \textbf{private成员变量},表示问题区域。
+        \item \texttt{Projection<Dim> proj}: \textbf{private成员变量},表示投影算子。
+        \item \texttt{Laplacian<Dim> lap}: \textbf{private成员变量},表示拉普拉斯算子。
+        \item \texttt{INSE\_Advection<Dim> adv}: \textbf{private成员变量},表示对流算子。
+        \item \texttt{FuncFiller<Dim> init\_filler:} \textbf{private成员变量},用于填写初值体平均。
+        \item \texttt{GhostFiller<Dim,Periodic> ghost\_filler:} \textbf{private成员变量},用于填写\texttt{Ghost Cell}。
+        \item \texttt{Tensor<rVec,Dim> res:} \textbf{private成员变量},用于表示速度场体平均的求解结果。
+        \item \texttt{Real t0}: \textbf{private成员变量},用于表示初始时刻。
+        \item \texttt{Real te}: \textbf{private成员变量},用于表示迭代终止时刻。
+        \item \texttt{Real dt}: \textbf{private成员变量},用于表示时间间隔。
+    \end{enumerate}
+    \item \textbf{成员函数:}
+    \begin{enumerate}
+        \item \texttt{INSESolver(const RectDomain<Dim>\& aDomain);}
+        
+        \textbf{public成员函数}
+
+        \textbf{输入:} \texttt{aDomain}表示问题区域。
+
+        \textbf{作用:} 构造函数，明确求解的问题区域，并依此对各离散算子进行初始化。
+
+        \item \texttt{void set\_param(VectorFunction<Dim+1,Dim>* force,VectorFunction<Dim,Dim>* init\_vel,Real Reynold);}
+        
+        \textbf{public成员函数}
+
+        \textbf{作用:}初始化方程求解的各个变量。
+
+        \item \texttt{void apply(Tensor<rVec,Dim>\& input, Tensor<rVec,Dim>\& rhs, Real t);}
+        
+        \textbf{public成员函数}
+
+        \textbf{作用:}实现单步Runge-Kutta迭代。
+
+        \item \texttt{void solve();}
+        
+        \textbf{public成员函数}
+
+        \textbf{作用:}最终实现方程求解。
+    \end{enumerate}
+\end{itemize}
 \end{document}

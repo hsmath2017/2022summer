@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "*.m": "matlab",
+        "string": "cpp",
+        "iterator": "cpp",
+        "functional": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "new": "cpp",
+        "ostream": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "stdexcept": "cpp",
+        "*.tcc": "cpp"
+    }
+}
