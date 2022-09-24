@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022) (preloaded format=xelatex 2022.9.17)  22 SEP 2022 17:28
+This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022) (preloaded format=xelatex 2022.9.17)  24 SEP 2022 15:16
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -638,7 +638,7 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 
 ]
 LaTeX Font Info:    Font shape `TU/FandolSong-Regular(0)/m/sl' in size <10.53937> not available
-(Font)              Font shape `TU/FandolSong-Regular(0)/m/it' tried instead on input line 135.
+(Font)              Font shape `TU/FandolSong-Regular(0)/m/it' tried instead on input line 151.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -663,14 +663,22 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller to compensate:
 (fancyhdr)                \addtolength{\topmargin}{-0.64723pt}.
 
-[4] (./BSpecRProblem.aux) ) 
+[4]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 12.64723pt, for example:
+(fancyhdr)                \setlength{\headheight}{12.64723pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+(fancyhdr)                \addtolength{\topmargin}{-0.64723pt}.
+
+[5] (./BSpecRProblem.aux) ) 
 Here is how much of TeX's memory you used:
- 13293 strings out of 475748
- 314094 string characters out of 5799183
- 698702 words of memory out of 5000000
- 34269 multiletter control sequences out of 15000+600000
+ 13367 strings out of 475748
+ 319665 string characters out of 5799183
+ 699726 words of memory out of 5000000
+ 34343 multiletter control sequences out of 15000+600000
  478689 words of font info for 98 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 89i,11n,97p,1238b,409s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,12n,97p,1238b,390s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on BSpecRProblem.pdf (4 pages).
+Output written on BSpecRProblem.pdf (5 pages).

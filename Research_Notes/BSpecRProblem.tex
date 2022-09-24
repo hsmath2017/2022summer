@@ -64,6 +64,7 @@
 \author{Shuang Hu}
 \begin{document}
 \maketitle
+\textbf{注:如无特殊说明，文中的公式编号均为文档BSpecRProblem.pdf中的编号，“文档”也特指BSpecRProblem.pdf。}
 \section{文档中的一些小问题}
 \begin{itemize}
     \item 图1上面的叙述中，$x_{i}=ih$存在误导，后面的空间离散算法是在区间中点处进行而非区间端点。
@@ -73,11 +74,11 @@
 \end{itemize}
 \section{关于算法的一些疑问}
 \begin{itemize}
-    \item 注意到，本次采用的虽然是熟悉的有限差分$MOL$算法，但取点的方案却和经典的有限差分算法有较大区别。记$n$为小区间段个数，$h=\frac{1}{n}$是每一段小区间的长度，之前我们学过的有限差分算法求解的是$x_{i}=ih$处函数的近似值，在处理边界条件时为方便起见，往往取$x_{-1}=-h$和$x_{n+1}=(n+1)h$为\texttt{Ghost Cell}。但在本问题的算法中，我们关心的是每段小区间中点处函数的近似取值，即$x_{i}=(i+\frac{1}{2})h$。相应的，\texttt{Ghost Cell}取为$x_{-1}:=-\frac{1}{2}h$和$x_{n}:=1+\frac{1}{2}h$。这样处理之后，方便了\textbf{Neumann边值条件}的处理，但与此同时对\textbf{Dirichlet边值条件}的处理造成了不便。这种处理方式和我们常用的处理方式相比较，优势和劣势分别体现在何处？
+    \item 注意到，本次采用的虽然是熟悉的有限差分$MOL$算法，但取点的方案却和经典的有限差分算法有较大区别。记$n$为小区间段个数，$h=\frac{1}{n}$是每一段小区间的长度，之前我们学过的有限差分算法求解的是$x_{i}=ih$处函数的近似值，在处理边界条件时为方便起见，往往取$x_{-1}=-h$和$x_{n+1}=(n+1)h$为\texttt{Ghost Cell}。但在本问题的算法中，我们关心的是每段小区间中点处函数的近似取值，即$x_{i}=(i+\frac{1}{2})h$。相应的，\texttt{Ghost Cell}取为$x_{-1}:=-\frac{1}{2}h$和$x_{n}:=1+\frac{1}{2}h$(文中列方程时实际上消去了\texttt{Ghost Cell})。这种处理方案，相比于传统的有限差分方法，有哪些优势？在本问题中为何要采用这种处理方案？
     \item 按照设定，$x_{I}$点左侧为较快的物理过程，而$x_{I}$右侧较慢。那么，针对两种不一样的物理过程，为什么采用同样的数值算法进行处理？可能在$x_{I}$左侧采用中心差分和向后欧拉，在$x_{I}$右侧采用中心差分和向前欧拉，会是更合理的处理方式。
     % \item 如上一点所述，对于$x_{I}$左侧和右侧的数据点分别求解，其原因是系数$\nu(x)$在$x_{I}$左侧和右侧存在截然不同的表现。如果$\nu$在问题区域$[0,1]$上为一个常值，那么直接在整个区域上进行有限差分离散就可以了。但在稳定性讨论时，我们则是针对一个经典的热方程进行讨论，这是因为我们需要先保证该算法求解热方程的正确性吗？
     \item 注意到，式$(24)$的矩阵$A$并非一个分块对角矩阵，这也就意味着$x_{I}$的左右两侧并没有完全解耦。这或许是稳定性分析的主要难点？
-    \item 如果考虑到$x_{I}$左侧和右侧$\nu$的显著区别，那么$r:=\frac{k\nu}{h^2}$至少需要分两段讨论，即$x_{I}$左侧和$x_{I}$右侧的$r$会存在显著区别，这样等式$(19)$则不成立，问题会更为复杂一些。
+    \item 如果考虑到$x_{I}$左侧和右侧$\nu$的显著区别，那么$r:=\frac{k\nu}{h^2}$至少需要分两段讨论，即$x_{I}$左侧和$x_{I}$右侧的$r$会存在显著区别，问题会更为复杂一些。
 \end{itemize}
 \section{稳定性分析问题简述}
 假设$A$和$S$分别按$(24)$, $(23)$式定义，记$B:=(I+rA)^{-1}(I+rS)$，文中所述算法稳定等价于式$(31)$成立，即序列$b_{n}:=\|B^{n}\|_{\infty}$为一个有界序列。而该问题可以转化为证明矩阵$B$的谱半径$\rho(B)<1$。
@@ -126,9 +127,31 @@
         0&0&0&0\\
     \end{bmatrix}.
 \end{equation}
-(同文档中式(37))。$Q_{1}$的形式比较接近离散拉普拉斯算子的形式，分析其特征值相对比较容易，主要难点在于提出$Q_{1}$和$Q_{2}$的公因子$r$后，$Q_{2}$的形式仍旧与参数$r$相关。但在分析$Q$的特征值时，我们依旧可以利用$Q_{1}$和$Q_{2}$的一些比较好的性质。该思路是我目前的首选思路，下一节的叙述中也会围绕这一条展开。
+(同文档中式(37))。由于我们只关心矩阵$Q$的特征值实部是否大于0，且参数$r>0$，我们可以把公因子$r$提取出来，转化为分析矩阵$P:=P_{1}+\frac{r^{2}}{1+r^{2}}P_{2}$的特征值。$P_{1}$，$P_{2}$的表达式分别为：
+\begin{equation}
+    \label{eq:rank1repairP}
+    P_{1}=\begin{bmatrix}
+        3&-1& & &\\
+        -1&2&-1& & \\
+         &\ddots&\ddots&\ddots& \\
+         & &-1&2&-1\\
+         & & &-1&1\\
+    \end{bmatrix}
+    ,P_{2}=\begin{bmatrix}
+        \mathbf{O}& & \\
+        & P_{4\times 4}& \\
+        & & \mathbf{O}\\
+    \end{bmatrix}
+    ,P_{4\times 4}=\begin{bmatrix}
+        -1&3&-3&1\\
+        1&-3&3&-1\\
+        0&0&0&0\\
+        0&0&0&0\\
+    \end{bmatrix}.    
+\end{equation}
+$P_{1}$的形式比较接近离散拉普拉斯算子的形式，分析其特征值相对比较容易，而$P_{2}$是一个秩1矩阵，也比较易于分析。对于$P=P_{1}+\frac{r^{2}}{1+r^2}P_{2}$，主要的难点在于$P_{2}$前面的系数与参数$r$相关。但在分析$P$的特征值时，我们依旧可以利用$P_{1}$和$P_{2}$的一些比较好的性质。该思路是我目前的首选思路，下一节的叙述中也会围绕这一条展开。
 \subsection{利用Sherman-Morrison 公式给出矩阵$B$的表达式}
-我认为这一条思路可行性一般。如$(40)$式所示，$B$的表达形式过于复杂，且涉及到求两个较复杂矩阵减法的过程，以至于我们很难对矩阵$B$的特征多项式进行分析。
+我认为这一条思路可行性较低。如$(40)$式所示，$B$的表达形式过于复杂，且涉及到求两个较复杂矩阵减法的过程，以至于我们很难对矩阵$B$的特征多项式进行分析。
 \subsection{矩阵的半正定分解}
 如果我们可以把矩阵$Q$分解为两个半正定矩阵的和，则问题即刻得到解决。但这条思路目前也不是我的首选，原因如下：
 \begin{itemize}
@@ -138,40 +161,78 @@
 \subsection{考虑其他(易于计算的)矩阵范数}
 文档中表1已经表明了直接计算矩阵$B$的$\infty$范数不可行，而矩阵范数除了$\infty$范数和$1$范数外都并不易于计算。所以这条思路也不太可行。
 \section{我的思路}
-按文档中的参考思路1，由于我们只关心$Q=Q_{1}+Q_{2}$的特征值实部与0的关系，且$r>0$，故我们可以把$Q_{1}$和$Q_{2}$的公因子$r$提出来，讨论$P=P_{1}+\frac{r^{2}}{1+r^2}Q_{2}$的特征值。其中$P_{1}=\frac{1}{r}Q_{1}$。由于$r>0$，不妨设$t=\frac{r^2}{1+r^2}$，则有$t\in(0,1)$，$P(t)=P_{1}+tQ_{2}$。
+由于$r\in(0,\infty)$，记$t=\frac{r^2}{1+r^2}$，可知$t\in(0,1)$，我们需要分析的矩阵$P(t)=P_{1}+\frac{r^{2}}{1+r^2}P_{2}=P_{1}+tP_{2}$。
 
-下面分析$P(t)$的特征多项式$f(\lambda,t):=\det(\lambda I-P(t))$。为方便讨论，考虑多项式$g(\lambda,t):=\det(P(t)-\lambda I)$，该多项式的根和$f(\lambda,t)$相同。由于$r(Q_{2})=1$，由行列式的性质可知$g(\lambda,t)$关于$t$是一次多项式，从而$\pdfFrac{g}{t}= C(\lambda)$，$C(\lambda)$仅与$\lambda$相关。这意味着$g(\lambda,t)$关于$t$单调。
+首先我们讨论实特征值。分析$P(t)$的特征多项式$f(\lambda,t):=\det(\lambda I-P(t))$。为方便讨论，考虑多项式$g(\lambda,t):=\det(P(t)-\lambda I)$，该多项式的根和$f(\lambda,t)$相同。由于$\text{rank}(Q_{2})=1$，由行列式的性质可知$g(\lambda,t)$关于$t$是一次多项式，从而$\pdfFrac{g}{t}= C(\lambda)$，$C(\lambda)$仅与$\lambda$相关。这意味着对于给定的$\lambda\in\mathbb{R}$，$g(\lambda,t)$关于$t$单调。
 
 \begin{thm}
-    对$\lambda\in\{\omega\in\mathbb{R}:C(\omega)\neq 0\}$，存在$t_{0}\in (0,1)$使得$\lambda$为$P(t_{0})$的特征值，当且仅当$g(\lambda,0)g(\lambda,1)<0$。
+    \label{thm1}
+    给定$\lambda_{0}\in\{\omega\in\mathbb{R}:C(\omega)\neq 0\}$，存在$t_{0}\in (0,\tau)$ $(\tau>0)$使得$\lambda_{0}$为$P(t_{0})$的特征值，当且仅当$g(\lambda_{0},0)g(\lambda_{0},\tau)<0$。
 \end{thm}
 \begin{proof}
-    $"\Leftarrow":$由于$h(t):=g(\lambda,t)$为连续函数，且$h(0)h(1)<0$，由零点存在定理，$\exists t_{0}\in(0,1)$ s.t. $h(t_{0})=0$，即$g(\lambda,t_{0})=0$。
+    $"\Leftarrow":$由于$h(t):=g(\lambda_{0},t)$为连续函数，且$h(0)h(\tau)<0$，由零点存在定理，$\exists t_{0}\in(0,\tau)$ s.t. $h(t_{0})=0$，即$g(\lambda_{0},t_{0})=0$，从而$\lambda_{0}$是$P(t_{0})$的特征值。
 
-    $"\Rightarrow":$由上面的分析可知，$h(t)$是线性函数，且由于$C(\lambda)\neq 0$，$h$非常值函数。故$h(t)=C(\lambda)(t-t_{0})$，计算可知:
+    $"\Rightarrow":$由于$\pdfFrac{g(\lambda_{0},t)}{t}=C(\lambda_{0})$，$h(t)$是一次函数。且由于$C(\lambda_{0})\neq 0$，可知$h$非常值函数。故$h(t)=C(\lambda_{0})(t-t_{0})$，计算可得:
     \begin{equation}
-        g(\lambda,0)g(\lambda,1)=C(\lambda)^{2}(1-t_{0})(-t_{0})<0.
+        g(\lambda_{0},0)g(\lambda_{0},\tau)=C(\lambda_{0})^{2}(\tau-t_{0})(-t_{0})<0.
     \end{equation}
+    最后一步不等式的依据是$0<\tau<t_{0}$。
 \end{proof}
 \begin{thm}
-    设$\lambda\in\{\omega\in\mathbb{R}:C(\omega)=0\}$，存在$t_{0}\in(0,1)$使得$\lambda$为$P(t_{0})$的特征值，当且仅当$g(\lambda,0)=g(\lambda,1)=0$。
+    \label{thm2}
+    给定$\lambda_{0}\in\{\omega\in\mathbb{R}:C(\omega)=0\}$，存在$t_{0}\in(0,\tau)$ $(\tau>0)$使得$\lambda_{0}$为$P(t_{0})$的特征值，当且仅当$g(\lambda_{0},0)=g(\lambda_{0},\tau)=0$。
 \end{thm}
 \begin{proof}
-    记$h(t):=g(\lambda,t)$，由前面的分析知，当$C(\lambda)=0$时，$h(t)\equiv h(0)$。因此，在这种情况下，$h(t)=0\Leftrightarrow h(0)=h(1)=0$，即$g(\lambda,0)=g(\lambda,1)=0$。
+    记$h(t):=g(\lambda_{0},t)$，当$C(\lambda_{0})=0$时，
+    \begin{equation}
+        \difFrac{h(t)}{t}=\pdfFrac{g(\lambda_{0},t)}{t}=C(\lambda_{0})=0,
+    \end{equation}
+    从而$h(t)\equiv h(0)$。因此，在这种情况下，$h(t_{0})=0\Leftrightarrow h(0)=h(\tau)=0$，即$g(\lambda_{0},0)=g(\lambda_{0},\tau)=0$。
 \end{proof}
 \begin{rem}
     \begin{equation}
         g(\lambda,0)=g(\lambda,1)\Leftrightarrow C(\lambda)=0.
     \end{equation}
 \end{rem}
-已知$P(0)$是正定矩阵，即:$\forall\lambda<0$， $P(\lambda,0)>0$。综合上述定理1，定理2和remark，如果$P(1)$不存在负特征根，即可说明$P(t)$无小于0的实根。
+\begin{cor}
+    给定$\tau>0$，如果$P(\tau)$的所有实特征值都大于0，那么$\forall t\in[0,\tau]$，$P(t)$的所有实特征值都大于0。
+\end{cor}
+\begin{proof}
+    由于$P(0)=P_{1}$为对称正定矩阵，$\forall\lambda\le 0$，$g(\lambda,0)>0$。根据$g(\lambda,t)$的定义，$\lim_{\lambda\rightarrow -\infty}g(\lambda,\tau)=+\infty$，且$g(\lambda,\tau)$关于$\lambda$连续。又根据已知条件，$\forall\lambda\le0$，$g(\lambda,\tau)\neq 0$，由零点存在性定理可知：
+    \begin{equation}
+        \forall\lambda\le 0,g(\lambda,\tau)>0.
+    \end{equation}
+    结合定理\ref{thm1}和定理\ref{thm2}，$\forall\lambda\le 0$, $t\in[0,\tau]$, $g(\lambda,t)>0$。即$P(t)$的所有实特征值均大于0。
+\end{proof}
 
-如果$P(1)$存在负特征根，则利用二分法查找$t_{0}$，使得$\forall t\in(0,t_{0})$，$P(t)$不存在负特征根。二分法中输入的函数$f(t):=\inf\{\lambda\in\mathbb{R}:g(\lambda,t)=0\}$，具体算法和数值分析讲义的算法1.1一致。
+由推论3可知，如果我们可以验证$P(1)$的所有实特征值均大于0，则说明$\forall t\in[0,1],P(t)$的所有实特征值均大于0。
+
+如果$P(1)$存在非正特征根，则利用二分查找算法寻找$t_{0}$，使得$\forall t\in(0,t_{0})$，$P(t)$不存在非正特征根。算法流程大致如下：
+
+\begin{enumerate}
+    \item 设定$t_{0}=0$，$t_{e}=1$，最小查询区间长度$\epsilon$。
+    \item 如果$|t_{e}-t_{0}|<\epsilon$，终止程序并返回$t_{0}$。
+    \item 计算$mid=\frac{t_{0}+t_{e}}{2}$。
+    \item 判断多项式$g(\lambda,mid)$是否存在非正实数根。如果存在，设定$t_{e}=mid$；如果不存在，设定$t_{0}=mid$，返回第二步。
+\end{enumerate}
+
+推论3保证了二分法输出的$t_{0}$满足：$\forall t\in[0,t_{0}]$，$P(t)$不存在非正的特征根。
+
+这样我们可以在实根的框架下解决稳定性分析问题。
+
+\section{存在问题和研究展望}
 
 目前这个思路可能存在下面的这些难点：
 \begin{itemize}
-    \item $P(1)$的特征值可能并不容易计算和估计。
-    \item $P(1)$的最小实特征值可能与矩阵$Q$的大小$n$，以及矩阵块$Q_{4\times 4}$的装配位置有关。
-    \item 目前这套方案可以解决实特征根的问题，但针对复特征根的问题则暂时无能为力。
+    \item 给定$\tau\in(0,1]$，不容易计算出$P(\tau)$特征值的解析表达式，如果找不到合适的估计，则需要考虑数值求解矩阵特征值。
+    \item $P(\tau)$的最小实特征值与矩阵$P$的大小$N$，以及矩阵块$P_{4\times 4}$的装配位置$M$有关。
+    \item 由于复数域并非有序域，且第五部分所述方案高度依赖零点存在定理，这个方案不能直接用于解决复特征根的问题。$P(0)$是实对称矩阵，特征根均为实数，但对于$\tau\neq 0$，$P(\tau)$可能出现实部非正的复特征根，这是目前的方案无法探测的。
+\end{itemize}
+
+研究展望:
+\begin{itemize}
+    \item 试着给出$P(1)$特征值的一个下界估计。
+    \item 检查$P(1)$是否存在非实数特征根。如果存在，则设计一组方案处理之。
+    \item 完成该算法求解热方程的稳定性分析后，尝试对区域耦合的扩散方程进行稳定性分析。
 \end{itemize}
 \end{document}
